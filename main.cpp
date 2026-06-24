@@ -3,6 +3,7 @@
 #include <glfw3.h>
 #include "src/lavish_core.h"
 #include "backend/lavish_impl_glfw.h"
+#include "backend/lavish_impl_opengl.h"
 #include "src/lavish_widgets.h"
 
 int main() {
@@ -20,16 +21,18 @@ int main() {
 
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
-	lavish::Initialize();
+	lavish::Initialize_ImplOpenGL( );
 
 	while (!glfwWindowShouldClose(window)) {
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glfwPollEvents();
-		lavish::ImplGlfwBeginFrame(window);
+		lavish::BeginFrame_GlfwImpl(window);
 
-		lavish::BeginWindow("fiut", {100, 100}, { 250, 100 } );
+		if (lavish::Button( "Test", { 100, 100 } )) {
+			printf( "Clicked" );
+		}
 
 		lavish::PollDrawList(kWindowWidth, kWindowHeight);
 

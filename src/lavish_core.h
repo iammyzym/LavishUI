@@ -1,5 +1,4 @@
 #pragma once
-#include "glad/glad.h"
 #include <vector>
 #include <cstdint>
 #include "lavish_math.h"
@@ -89,78 +88,31 @@ namespace lavish {
 
 		};
 
-		struct RenderBasis {
-
-			GLuint mVbo{};
-			GLuint mVao{};
-			GLuint mEbo{};
-			GLuint mShader{};
-
-		};
-
-		struct Context {
+		struct ContextIO {
 
 			detail::DrawList mMainDrawList{};
-			detail::RenderBasis mRenderBasis{};
-			Vector2 mMousePos{};
 			WidgetID mHoveredID = 0;
 			WidgetID mActivatedID = 0;
+
+			struct MouseState {
+
+#				define LAVISH_MOUSE_BTN_LEFT	(1 << 0) // 0000`0001
+#				define LAVISH_MOUSE_BTN_MIDDLE	(1 << 1) // 0000`0010
+#				define LAVISH_MOUSE_BTN_RIGHT	(1 << 2) // 0000`0100
+
+				Vector2 mPosition{};
+				uint8_t mButtonsDown = 0;
+				uint8_t mButtonsClicked = 0;
+				uint8_t mButtonsReleased = 0;
+
+			} mMouse;
+
 
 			void( *mBackendPollEventsFn )(float, float) = nullptr;
 
 		};
 
-		Context gContext;
-
-	}
-
-	void Initialize( ) {
-
-		GLuint& vbo = detail::gContext.mRenderBasis.mVbo;
-		GLuint& vao = detail::gContext.mRenderBasis.mVao;
-		GLuint& ebo = detail::gContext.mRenderBasis.mEbo;
-		GLuint& program = detail::gContext.mRenderBasis.mShader;
-
-		glCreateBuffers( 1, &vbo );
-		glNamedBufferStorage( vbo, 15000, nullptr, GL_DYNAMIC_STORAGE_BIT );
-
-		glCreateBuffers( 1, &ebo );
-		glNamedBufferStorage( ebo, 15000, nullptr, GL_DYNAMIC_STORAGE_BIT );
-
-		glCreateVertexArrays( 1, &vao );
-		glVertexArrayVertexBuffer( vao, 0, vbo, 0, sizeof( detail::Vertex ) );
-
-		glEnableVertexArrayAttrib( vao, 0 );
-		glVertexArrayAttribBinding( vao, 0, 0 );
-		glVertexArrayAttribFormat( vao, 0, 2, GL_FLOAT, GL_FALSE, offsetof( detail::Vertex, mX ) );
-
-		glEnableVertexArrayAttrib( vao, 1 );
-		glVertexArrayAttribBinding( vao, 1, 0 );
-		glVertexArrayAttribFormat( vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof( detail::Vertex, mU ) );
-
-		glEnableVertexArrayAttrib( vao, 2 );
-		glVertexArrayAttribBinding( vao, 2, 0 );
-		glVertexArrayAttribFormat( vao, 2, 4, GL_UNSIGNED_BYTE, GL_TRUE, offsetof( detail::Vertex, mColor ) );
-
-		glVertexArrayElementBuffer( vao, ebo );
-
-		program = glCreateProgram();
-
-		GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vs, 1, &detail::gVertexShaderSource, nullptr);
-		glCompileShader(vs);
-
-		GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fs, 1, &detail::gFragmentShaderSource, nullptr);
-		glCompileShader(fs);
-
-		glAttachShader(program, vs);
-		glAttachShader(program, fs);
-
-		glLinkProgram(program);
-
-		glDeleteShader( fs );
-		glDeleteShader( vs );
+		ContextIO gContext;
 
 	}
 
@@ -194,10 +146,10 @@ namespace lavish {
 		return static_cast<WidgetID>(hash);
 	}
 
-	bool CheckAABB(Vector2 mousePos, Vector2 widgetPos, Vector2 widgetSize) {
+	bool CheckAABB(Vector2 mousePos, Vector2 rectPosition, Vector2 rectSize) {
 
-		bool overlapX = ((mousePos.x >= widgetPos.x) && (mousePos.x <= widgetPos.x + widgetSize.x));
-		bool overlapY = ((mousePos.y >= widgetPos.y) && (mousePos.y <= widgetPos.y + widgetSize.y));
+		bool overlapX = ((mousePos.x >= rectPosition.x) && (mousePos.x <= rectPosition.x + rectSize.x));
+		bool overlapY = ((mousePos.y >= rectPosition.y) && (mousePos.y <= rectPosition.y + rectSize.y));
 		return (overlapX && overlapY);
 
 	}
