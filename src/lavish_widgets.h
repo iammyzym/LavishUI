@@ -1,5 +1,20 @@
 #pragma once
 #include "lavish_core.h"
+
+namespace lavish {
+
+	void BeginWindow( const char* label, Vector2 position, Vector2 size );
+	bool Button( const char* label, Vector2 position, Vector2 size );
+	void Checkbox( const char* label, bool* value, Vector2 position );
+
+}
+
+#ifndef LAVISH_IMPLEMENTATION
+#	error Must define LAVISH_IMPLEMENTATION macro in cpp file
+#endif
+
+#ifdef LAVISH_IMPLEMENTATION
+
 namespace lavish {
 
 	void BeginWindow( const char* label, Vector2 position, Vector2 size ) {
@@ -22,10 +37,10 @@ namespace lavish {
 
 	}
 
-	bool Button( const char* label, Vector2 position, Vector2 size = { 100, 100 } ) {
+	bool Button( const char* label, Vector2 position, Vector2 size ) {
 
 		WidgetID id = GetID( label );
-		WidgetID& activeID = detail::gContext.mActivatedID;
+		WidgetID& activeID = detail::gContext.mActiveID;
 
 		const Vector2& mousePos = detail::gContext.mMouse.mPosition;
 		bool isHovered = CheckAABB( mousePos, position, size );
@@ -53,11 +68,41 @@ namespace lavish {
 
 	}
 
-	bool Checkbox( const char* label, bool* value, Vector2 position ) {
+	void Checkbox( const char* label, bool* value, Vector2 position ) {
 
+		WidgetID id = GetID( label );
+		WidgetID& activeID = detail::gContext.mActiveID;
+
+		const Vector2 checkboxSize = { 25, 25 };
 		const Vector2 mousePos = detail::gContext.mMouse.mPosition;
-		bool isHovered = CheckAABB( mousePos, position, { 20, 20 } );
+		bool isHovered = CheckAABB( mousePos, position, checkboxSize );
+
+		if (isHovered) {
+			detail::gContext.mHoveredID = id;
+			if ((detail::gContext.mMouse.mButtonsClicked & LAVISH_MOUSE_BTN_LEFT) && activeID == 0)
+				activeID = id;
+		}
+
+		if (detail::gContext.mMouse.mButtonsReleased & LAVISH_MOUSE_BTN_LEFT) {
+			if (activeID == id) {
+				activeID = 0;
+				*value = !(*value);
+			}
+		}
+
+		Color32 finalColor = 0;
+
+		if (*value) {
+			finalColor = MakeColor( 0, 255, 0 );
+		}
+		else {
+			finalColor = MakeColor( 255, 0, 0 );
+		}
+
+		detail::gContext.mMainDrawList.AddRect( position.x, position.y, checkboxSize.x, checkboxSize.y, finalColor );
 
 	}
 
 }
+
+#endif

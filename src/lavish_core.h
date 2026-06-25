@@ -48,7 +48,7 @@ namespace lavish {
 		struct Vertex {
 			float mX{}, mY{};
 			float mU{}, mV{};
-			uint32_t mColor;
+			Color32 mColor;
 		};
 
 		class DrawList {
@@ -62,7 +62,7 @@ namespace lavish {
 				mIndexBuffer.clear( );
 			}
 
-			void AddRect( float x, float y, float width, float height, uint32_t color ) {
+			void AddRect( float x, float y, float width, float height, Color32 color ) {
 
 				uint32_t baseIndex = static_cast< uint32_t >(mVertexBuffer.size( ));
 
@@ -92,7 +92,7 @@ namespace lavish {
 
 			detail::DrawList mMainDrawList{};
 			WidgetID mHoveredID = 0;
-			WidgetID mActivatedID = 0;
+			WidgetID mActiveID = 0;
 
 			struct MouseState {
 
@@ -129,12 +129,12 @@ namespace lavish {
 
 	}
 
-	constexpr uint32_t MakeColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {
+	constexpr Color32 MakeColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {
 		return
-			static_cast<uint32_t>(r) |
-			(static_cast<uint32_t>(g) << 8) |
-			(static_cast<uint32_t>(b) << 16) |
-			(static_cast<uint32_t>(a) << 24);
+			static_cast< Color32 >(r) |
+			(static_cast< Color32 >(g) << 8) |
+			(static_cast< Color32 >(b) << 16) |
+			(static_cast< Color32 >(a) << 24);
 	}
 
 	WidgetID GetID(const char* label) {
